@@ -1,0 +1,30 @@
+name: Docker Blockchain
+
+on:
+  push:
+    branch: [ main ]
+
+jobs:
+  tarefa1:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Baixa o código do repositório para o servidor do GitHub
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+        # 2. Configura o Docker Buildx (ferramenta moderna para build de containers)
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+          
+      - name: Build e Push da Imagem Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }} # Só faz push se não for um PR
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/blockchain-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/blockchain-server:${{ github.sha }}
+
+#adicionar meu username do dockerhub ao secrets
