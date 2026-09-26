@@ -10,20 +10,20 @@ COPY gradlew /app/
 # Garante permissão de execução para o gradlew
 RUN chmod +x gradlew
 
-# Baixa as dependências e compila usando o wrapper do projeto
+# Copia o código fonte e gera o JAR executável
 COPY src /app/src
 RUN ./gradlew bootJar --no-daemon -x test
 
 # ===== ETAPA 2: Imagem Final Leve para Produção =====
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Cria um usuário não-root por segurança
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
-# Copia APENAS o JAR gerado pelo Gradle na Etapa 1
-COPY --from=build /app/build/libs/*-SNAPSHOT.jar app.jar 2>/dev/null || COPY --from=build /app/build/libs/*.jar app.jar
+# Copia o JAR gerado (o bootJar do Spring cria um único arquivo executável em build/libs/)
+COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
