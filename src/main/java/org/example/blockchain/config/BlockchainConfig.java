@@ -9,13 +9,20 @@ import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
+import org.web3j.tx.RawTransactionManager;
+import org.web3j.tx.TransactionManager;
+import org.web3j.tx.gas.ContractGasProvider;
+import org.web3j.tx.gas.DefaultGasProvider;
+
 import java.io.File;
 
 @Configuration
 public class BlockchainConfig {
 
-    @Value("${blockchain.rpc.url:http://localhost:8545}")
+    @Value("${blockchain.rpc.url:http://136.80.69.253:8545}")
     private String rpcUrl;
+
+
 
     @Value("${blockchain.gas.price:0}")
     private long gasPrice;
@@ -60,6 +67,29 @@ public class BlockchainConfig {
     }
 
     // (Opcional) Beans para gas provider, se necessário
-    // @Bean
-    // public ContractGasProvider gasProvider() { ... }
+    @Bean
+    public ContractGasProvider gasProvider() {
+
+        return new ContractGasProvider() {
+            @Override
+            public BigInteger getGasPrice(String contractFunc) {
+                return BigInteger.ZERO;
+            }
+
+            @Override
+            public BigInteger getGasPrice() {
+                return BigInteger.ZERO;
+            }
+
+            @Override
+            public BigInteger getGasLimit(String contractFunc) {
+                return BigInteger.valueOf(3_000_000L);
+            }
+
+            @Override
+            public BigInteger getGasLimit() {
+                return BigInteger.valueOf(3_000_000L);
+            }
+        } ;
+    }
 }

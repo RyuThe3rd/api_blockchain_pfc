@@ -1,70 +1,84 @@
 package org.example.blockchain.controllers;
 
 import jakarta.validation.Valid;
-import org.example.blockchain.dto.AnchorDocumentRequestDTO;
-import org.example.blockchain.dto.VerificationResponseDTO;
-import org.example.blockchain.models.DocumentProof;
-import org.example.blockchain.services.BlockchainService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.blockchain.service.StatementRegistryService;
+import org.example.blockchain.service.StatementRegistryService.StatementVerificationResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/documents")
+@RequiredArgsConstructor
 public class DocumentVerificationController {
 
-    private static final Logger logger = LoggerFactory.getLogger(DocumentVerificationController.class);
+    private final StatementRegistryService statementRegistryService;
 
-    private final BlockchainService blockchainService;
-
-    @Autowired
-    public DocumentVerificationController(BlockchainService blockchainService) {
-        this.blockchainService = blockchainService;
+    /**
+     * DTO simplificado para ancoragem de extrato
+     */
+    @Data
+    public static class AnchorStatementRequestDTO {
+        @NotBlank(message = "O hash do documento e obrigatorio")
+        @Size(min = 64, max = 66, message = "O hash SHA-256 deve ter 64 caracteres hexadecimais")
+        private String documentHash;
     }
 
+    /**
+     * Ancorar o hash SHA-256 de um extrato na blockchain.
+     * POST /api/v1/documents/anchor
+     */
     @PostMapping("/anchor")
-    public ResponseEntity<?> anchorDocument(@Valid @RequestBody AnchorDocumentRequestDTO request) {
+    public ResponseEntity<?> anchorDocument(@Valid @RequestBody AnchorStatementRequestDTO request) {
         try {
-            String txHash = blockchainService.anchorDocument(
-                    request.getDocumentHash(),
-                    request.getBankId(),
-                    request.getBankSignature(),
-                    request.getTimestamp()
-            );
-            return ResponseEntity.ok().body("Documento ancorado com sucesso. Transação: " + txHash);
-        } catch (SecurityException e) {
-            logger.warn("Falha na autenticação: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            String txHash = statementRegistryService.anchorStatement(request.getDocumentHash());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Extrato bancario ancorado com sucesso na blockchain");
+            response.put("documentHash", request.getDocumentHash());
+            response.put("transactionHash", txHash);
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Erro de validacao ao ancorar: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            logger.error("Erro ao ancorar documento", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: " + e.getMessage());
+            log.error("Erro ao ancorar extrato na blockchain", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Falha ao processar transacao on-chain: " + e.getMessage()));
         }
     }
 
+    /**
+     * Verificar a autenticidade de um extrato.
+     * GET /api/v1/documents/verify/{documentHash}
+     */
     @GetMapping("/verify/{documentHash}")
-    public ResponseEntity<VerificationResponseDTO> verifyDocument(@PathVariable String documentHash) {
+    public ResponseEntity<?> verifyDocument(@PathVariable String documentHash) {
         try {
-            DocumentProof proof = blockchainService.verifyDocument(documentHash);
-            if (proof != null) {
-                VerificationResponseDTO response = new VerificationResponseDTO(
-                        true,
-                        proof.getIssuerAddress(), // ou bankId, mas temos só endereço; podemos mapear
-                        proof.getBlockNumber(),
-                        proof.getTransactionHash(),
-                        proof.getTimestamp()
-                );
-                return ResponseEntity.ok(response);
-            } else {
-                // Retorna válido=false com campos nulos
-                return ResponseEntity.ok(new VerificationResponseDTO(false, null, null, null, null));
+            StatementVerificationResult result = statementRegistryService.verifyStatement(documentHash);
+
+            if (!result.isExists()) {
+                return ResponseEntity.ok(Map.of(
+                        "exists", false,
+                        "message", "Extrato nao encontrado ou nao autenticado na blockchain"
+                ));
             }
+
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            logger.error("Erro na verificação", e);
+            log.error("Erro ao verificar extrato com hash: {}", documentHash, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new VerificationResponseDTO(false, null, null, null, null));
+                    .body(Map.of("error", "Erro ao consultar a blockchain: " + e.getMessage()));
         }
     }
 }
