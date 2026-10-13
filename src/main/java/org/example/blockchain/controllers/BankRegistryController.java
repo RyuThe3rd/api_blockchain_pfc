@@ -61,7 +61,6 @@ public class BankRegistryController {
                     .toList();
 
             return ResponseEntity.ok(banksDto);
-            return ResponseEntity.ok(banks);
         } catch (Exception e) {
             log.error("Erro ao procurar a lista de bancos", e);
             return ResponseEntity.internalServerError().build();
