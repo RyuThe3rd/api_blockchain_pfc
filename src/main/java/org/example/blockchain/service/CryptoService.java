@@ -52,7 +52,7 @@ public class CryptoService {
     }
 
     public String getOperationalPublicKey() {
-        return credentials.getAddress(); // Endereço/Chave pública da conta operacional
+        return defaultCredentials.getAddress(); // Endereço/Chave pública da conta operacional
     }
 
     /**

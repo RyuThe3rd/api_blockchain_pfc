@@ -91,4 +91,15 @@ public class BankRegistryService {
         BankRegistry contract = loadContract();
         return contract.getBankName(BigInteger.valueOf(bankId)).send();
     }
+
+    public String getOperationalKey(BigInteger bankId) {
+        try {
+            BankRegistry bankRegistryContract = loadContract();
+            // Invoca a função getOperationalKey no wrapper Web3j do Smart Contract BankRegistry
+            return bankRegistryContract.getOperationalKey(bankId).send();
+        } catch (Exception e) {
+            log.error("Erro ao consultar chave operacional para o bankId {}: {}", bankId, e.getMessage());
+            throw new RuntimeException("Falha ao consultar a blockchain: " + e.getMessage(), e);
+        }
+    }
 }

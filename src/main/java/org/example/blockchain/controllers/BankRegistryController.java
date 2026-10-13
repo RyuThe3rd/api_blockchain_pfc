@@ -1,5 +1,7 @@
 package org.example.blockchain.controllers;
 
+import java.math.BigInteger;
+import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +12,6 @@ import org.example.blockchain.service.BankRegistryService;
 import org.example.blockchain.wrappers.BankRegistry.BankSummary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 

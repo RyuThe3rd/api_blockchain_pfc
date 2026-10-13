@@ -62,7 +62,7 @@ public class DocumentVerificationController {
 
             // 3. Serializar para JSON Canonizado e calcular documentHash = SHA256(JSON)
             ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(SerializationFeature.ORDER_MAP_BY_PROPERTIES_SORTED, true);
+            // mapper.configure(SerializationFeature.ORDER_MAP_BY_PROPERTIES_SORTED, true);
             String canonicalJson = mapper.writeValueAsString(canonicalPayloadMap);
 
             String documentHash = Numeric.toHexString(Hash.sha256(canonicalJson.getBytes(StandardCharsets.UTF_8)));
