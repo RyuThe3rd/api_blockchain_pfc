@@ -48,7 +48,7 @@ public class BankRegistryController {
     @GetMapping
     public ResponseEntity<List<BankSummaryDTO>> getAllBanks() {
         try {
-            List<BankSummary> banks = bankRegistryService.getAllBanks();
+            List<BankSummary> rawBanks = bankRegistryService.getAllBanks();
 
             // 2. Mapeia para DTOs limpos (removendo metadados do Web3j)
             List<BankSummaryDTO> banksDto = rawBanks.stream()
