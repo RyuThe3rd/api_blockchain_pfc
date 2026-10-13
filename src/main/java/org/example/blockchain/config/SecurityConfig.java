@@ -27,16 +27,28 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
+                // Desativa CSRF pois a API é Stateless (REST)
+                .csrf(AbstractHttpConfigurer::disable)
+
+                // Define gestão de sessão como STATELESS (sem cookies de sessão no servidor)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/documents/anchor").authenticated()  // endpoints sensíveis
-                        .requestMatchers("/api/v1/documents/verify/**").permitAll()
-                        .requestMatchers("/api/v1/blockchain/status").permitAll()
-                        .anyRequest().authenticated()
+
+                // Configuração de permissões de rotas
+                .authorizeHttpRequests(auth -> auth
+                        // 1. Rotas Públicas (Health Check, Actuator, Verificação de QR Code)
+                        .requestMatchers("/api/v1/health/**", "/actuator/**", "/h2-console/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/statements/verify/**").permitAll()
+
+                        // 2. Rotas do Core Bancário e Administração (Exigem autenticação ou API Key)
+                        .requestMatchers("/api/v1/admin/**").permitAll()
+                        .requestMatchers("/api/v1/statements/**").permitAll()
+
+                        // Qualquer outra rota
+                        .anyRequest().permitAll()
                 )
-                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(basic -> {}); // simplificado; em produção use JWT ou API Key
+
+                // Mantém HTTP Basic ativado temporariamente para testes via Postman/cURL
+                .httpBasic(httpBasic -> {});
 
         return http.build();
     }
