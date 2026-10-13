@@ -45,9 +45,22 @@ public class BankRegistryController {
      * GET /api/v1/banks
      */
     @GetMapping
-    public ResponseEntity<List<BankSummary>> getAllBanks() {
+    public ResponseEntity<List<BankSummaryDTO>> getAllBanks() {
         try {
             List<BankSummary> banks = bankRegistryService.getAllBanks();
+
+            // 2. Mapeia para DTOs limpos (removendo metadados do Web3j)
+            List<BankSummaryDTO> banksDto = rawBanks.stream()
+                    .map(b -> new BankSummaryDTO(
+                            b.bankId,
+                            b.name,
+                            b.operationalKey,
+                            b.isActive,
+                            b.expiresAt
+                    ))
+                    .toList();
+
+            return ResponseEntity.ok(banksDto);
             return ResponseEntity.ok(banks);
         } catch (Exception e) {
             log.error("Erro ao procurar a lista de bancos", e);
