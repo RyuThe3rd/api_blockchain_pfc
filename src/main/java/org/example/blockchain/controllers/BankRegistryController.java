@@ -10,7 +10,7 @@ import org.example.blockchain.service.BankRegistryService;
 import org.example.blockchain.wrappers.BankRegistry.BankSummary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
