@@ -6,9 +6,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.blockchain.dto.AnchorStatementRequestDTO;
-import org.example.blockchain.service.CryptoService;
-import org.example.blockchain.service.StatementRegistryService;
-import org.example.blockchain.service.StatementRegistryService.StatementVerificationResult;
+// Imports corrigidos com 'services' (plural) conforme a estrutura do teu projeto
+import org.example.blockchain.services.CryptoService;
+import org.example.blockchain.services.StatementRegistryService;
+import org.example.blockchain.services.StatementRegistryService.StatementVerificationResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ import java.util.TreeMap;
 public class DocumentVerificationController {
 
     private final StatementRegistryService statementRegistryService;
-    private final CryptoService cryptoService; // 👈 Injetado via @RequiredArgsConstructor
+    private final CryptoService cryptoService; // Injetado via Lombok @RequiredArgsConstructor
 
     /**
      * Ancorar o hash SHA-256 de um extrato na blockchain.
