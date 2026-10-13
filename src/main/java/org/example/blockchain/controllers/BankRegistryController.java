@@ -108,4 +108,26 @@ public class BankRegistryController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    /**
+     * Endpoint público para a PWA obter a Chave Pública Operacional do banco
+     * e validar a assinatura digital do QR Code offline.
+     */
+    @GetMapping("/{bankId}/operational-key")
+    public ResponseEntity<?> getOperationalKey(@PathVariable BigInteger bankId) {
+        try {
+            String operationalKey = bankRegistryService.getOperationalKey(bankId);
+
+            return ResponseEntity.ok(Map.of(
+                    "bankId", bankId,
+                    "operationalKey", operationalKey
+            ));
+        } catch (Exception e) {
+            log.error("Erro ao procurar chave operacional do banco {}", bankId, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Banco nao encontrado ou inativo na blockchain."));
+        }
+    }
+
+
 }

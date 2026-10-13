@@ -1,19 +1,28 @@
 package org.example.blockchain.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class AnchorStatementRequestDTO {
 
-    @NotBlank(message = "O hash do documento e obrigatorio")
-    @Size(min = 64, max = 66, message = "O hash SHA-256 deve ter 64 caracteres hexadecimais")
-    private String documentHash;
+    @NotBlank(message = "A chave privada do banco é obrigatória para assinatura")
+    private String privateKey;
+
+    @NotBlank(message = "O nome do banco é obrigatório")
+    private String banco; // ex: "BCI"
+
+    @NotBlank(message = "O nome do titular é obrigatório")
+    private String titular; // ex: "Rui Manuel de Noronha Matomate"
+
+    @NotBlank(message = "O hash da conta é obrigatório")
+    private String contaHash; // ex: SHA-256 do NIB/Conta
+
+    @NotBlank(message = "O período é obrigatório")
+    private String periodo; // ex: "2026-01-01 a 2026-06-30"
+
+    @NotBlank(message = "O saldo final é obrigatório")
+    private String saldoFinal; // ex: "500000.00 MZN"
+
+    private String transactionsHash; // Opcional (para Extratos Detalhados - Tipo A)
 }
