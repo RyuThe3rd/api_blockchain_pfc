@@ -1,21 +1,26 @@
 package org.example.blockchain.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.blockchain.dto.AnchorStatementRequestDTO;
+import org.example.blockchain.service.CryptoService;
 import org.example.blockchain.service.StatementRegistryService;
 import org.example.blockchain.service.StatementRegistryService.StatementVerificationResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.example.blockchain.dto.AnchorStatementRequestDTO;
-import java.util.HashMap;
-import java.util.Map;
+import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Hash;
 import org.web3j.utils.Numeric;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Slf4j
 @RestController
@@ -24,14 +29,12 @@ import org.web3j.utils.Numeric;
 public class DocumentVerificationController {
 
     private final StatementRegistryService statementRegistryService;
-
-
+    private final CryptoService cryptoService; // 👈 Injetado via @RequiredArgsConstructor
 
     /**
      * Ancorar o hash SHA-256 de um extrato na blockchain.
      * POST /api/v1/documents/anchor
      */
-
     @PostMapping("/anchor")
     public ResponseEntity<?> anchorStatement(@Valid @RequestBody AnchorStatementRequestDTO request) {
         try {
@@ -96,7 +99,6 @@ public class DocumentVerificationController {
         }
     }
 
-
     /**
      * Verificar a autenticidade de um extrato.
      * GET /api/v1/documents/verify/{documentHash}
@@ -120,6 +122,4 @@ public class DocumentVerificationController {
                     .body(Map.of("error", "Erro ao consultar a blockchain: " + e.getMessage()));
         }
     }
-
-
 }
