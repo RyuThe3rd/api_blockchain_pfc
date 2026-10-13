@@ -1,5 +1,6 @@
 package org.example.blockchain.controllers;
 
+import org.example.blockchain.dto.BankSummaryDTO;
 import java.math.BigInteger;
 import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
