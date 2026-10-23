@@ -143,5 +143,27 @@ public class BankRegistryController {
         }
     }
 
+    @GetMapping("/{bankId}/status")
+    public ResponseEntity<?> getBankStatus(@PathVariable BigInteger bankId) {
+        try {
+            boolean isActive = bankRegistryService.isBankActive(bankId);
+            return ResponseEntity.ok(Map.of("bankId", bankId, "isActive", isActive));
+        } catch (Exception e) {
+            log.error("Erro ao verificar estado do banco {}", bankId, e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
 
+    @GetMapping("/validate-historical")
+    public ResponseEntity<?> validateHistoricalKey(
+            @RequestParam String key,
+            @RequestParam BigInteger timestamp) {
+        try {
+            boolean isValid = bankRegistryService.validateHistoricalKey(key, timestamp);
+            return ResponseEntity.ok(Map.of("isValid", isValid));
+        } catch (Exception e) {
+            log.error("Erro ao validar chave historica", e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

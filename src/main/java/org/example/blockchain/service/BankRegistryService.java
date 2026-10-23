@@ -10,6 +10,7 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.gas.ContractGasProvider;
+import org.web3j.tuples.generated.Tuple6;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -85,12 +86,14 @@ public class BankRegistryService {
     }
 
     /**
+     * DEPRECATED - JA NÃO ESTA NO SMART CONTRACT
      * Retorna o nome do banco pelo ID
-     */
+
     public String getBankName(Long bankId) throws Exception {
         BankRegistry contract = loadContract();
         return contract.getBankName(BigInteger.valueOf(bankId)).send();
     }
+     */
 
     public String getOperationalKey(BigInteger bankId) {
         try {
@@ -101,5 +104,20 @@ public class BankRegistryService {
             log.error("Erro ao consultar chave operacional para o bankId {}: {}", bankId, e.getMessage());
             throw new RuntimeException("Falha ao consultar a blockchain: " + e.getMessage(), e);
         }
+    }
+
+    public boolean isBankActive(BigInteger bankId) throws Exception {
+        BankRegistry contract = loadContract();
+        // A função banks() retorna uma Tuple com os dados do banco.
+        // O componente 5 é o isActive.
+        Tuple6<BigInteger, String, String, String, Boolean, BigInteger> bankData = contract.banks(bankId).send();
+        return bankData.component5();
+    }
+    /**
+     * Valida se uma chave era válida no timestamp de registo do documento (Teste D)
+     */
+    public boolean validateHistoricalKey(String keyAddress, BigInteger timestamp) throws Exception {
+        BankRegistry contract = loadContract();
+        return contract.validateHistoricalKey(keyAddress, timestamp).send();
     }
 }
