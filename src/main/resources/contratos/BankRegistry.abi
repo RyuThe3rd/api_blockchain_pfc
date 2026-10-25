@@ -14,6 +14,25 @@
 				"type": "uint256"
 			},
 			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOperationalKey",
+				"type": "address"
+			}
+		],
+		"name": "BankReactivated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "bankId",
+				"type": "uint256"
+			},
+			{
 				"indexed": false,
 				"internalType": "string",
 				"name": "name",
@@ -46,6 +65,37 @@
 			}
 		],
 		"name": "BankRevoked",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "bankId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "operationalKey",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "suspectedFrom",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "reportedAt",
+				"type": "uint256"
+			}
+		],
+		"name": "KeyCompromiseReported",
 		"type": "event"
 	},
 	{
@@ -218,6 +268,59 @@
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "_key",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "isAffectedByCompromise",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "keyCompromises",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "suspectedFrom",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "reportedAt",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "exists",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "",
 				"type": "address"
 			}
@@ -275,6 +378,29 @@
 				"type": "uint256"
 			},
 			{
+				"internalType": "address",
+				"name": "_newOperationalKey",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_durationInSeconds",
+				"type": "uint256"
+			}
+		],
+		"name": "reactivateBank",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_bankId",
+				"type": "uint256"
+			},
+			{
 				"internalType": "string",
 				"name": "_name",
 				"type": "string"
@@ -306,9 +432,78 @@
 				"internalType": "uint256",
 				"name": "_bankId",
 				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_key",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_suspectedFrom",
+				"type": "uint256"
+			}
+		],
+		"name": "reportKeyCompromise",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_bankId",
+				"type": "uint256"
 			}
 		],
 		"name": "revokeBank",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_bankId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_suspectedFrom",
+				"type": "uint256"
+			}
+		],
+		"name": "revokeBankAndReportCompromise",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_bankId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_newOperationalKey",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_newDurationInSeconds",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_suspectedFrom",
+				"type": "uint256"
+			}
+		],
+		"name": "rotateAndReportCompromise",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -354,6 +549,64 @@
 			{
 				"internalType": "bool",
 				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_operationalKey",
+				"type": "address"
+			}
+		],
+		"name": "validateOperationalKey",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "isValid",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bankId",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_key",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_bankId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "verifyHistoricalStatus",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "historicalValid",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "affectedByCompromise",
 				"type": "bool"
 			}
 		],

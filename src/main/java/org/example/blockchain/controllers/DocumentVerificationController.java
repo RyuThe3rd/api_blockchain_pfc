@@ -6,10 +6,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.blockchain.dto.AnchorStatementRequestDTO;
+import org.example.blockchain.dto.VerificationResponseDTO;
 // Imports corrigidos com 'services' (plural) conforme a estrutura do teu projeto
 import org.example.blockchain.service.CryptoService;
 import org.example.blockchain.service.StatementRegistryService;
-import org.example.blockchain.service.StatementRegistryService.StatementVerificationResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,7 +71,7 @@ public class DocumentVerificationController {
             String signature = cryptoService.signDocumentHash(documentHash, bankCredentials);
 
             // 5. Ancorar o documentHash na Blockchain Besu (via Smart Contract StatementRegistry)
-            String txHash = statementRegistryService.anchorStatement(documentHash);
+            String txHash = statementRegistryService.anchorStatement(documentHash, bankCredentials);
 
             // 6. Adicionar a assinaturaBanco ao Payload Final do QR Code
             canonicalPayloadMap.put("assinaturaBanco", signature);
@@ -107,15 +107,9 @@ public class DocumentVerificationController {
     @GetMapping("/verify/{documentHash}")
     public ResponseEntity<?> verifyDocument(@PathVariable String documentHash) {
         try {
-            StatementVerificationResult result = statementRegistryService.verifyStatement(documentHash);
+            VerificationResponseDTO result = statementRegistryService.verifyStatement(documentHash);
 
-            if (!result.isExists()) {
-                return ResponseEntity.ok(Map.of(
-                        "exists", false,
-                        "message", "Extrato nao encontrado ou nao autenticado na blockchain"
-                ));
-            }
-
+            // O resultado e sempre estruturado, inclusive quando a prova nao existe.
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Erro ao verificar extrato com hash: {}", documentHash, e);

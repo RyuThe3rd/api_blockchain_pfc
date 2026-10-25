@@ -3,6 +3,9 @@ pragma solidity ^0.8.20;
 
 interface IBankRegistry {
     function validateOperationalKey(address _operationalKey) external view returns (bool isValid, uint256 bankId);
+
+    function verifyHistoricalStatus(address _key, uint256 _bankId, uint256 _timestamp) external view returns (bool historicalValid, bool affectedByCompromise);
+
 }
 
 contract StatementRegistry {
@@ -55,5 +58,38 @@ contract StatementRegistry {
             return (false, 0, address(0), 0);
         }
         return (true, record.bankId, record.chaveOperacional, record.timestamp);
+    }
+
+    function verifyStatementWithStatus(
+        bytes32 _documentHash
+    ) external view returns (
+        bool exists,
+        uint256 bankId,
+        address chaveOperacional,
+        uint256 timestamp,
+        bool historicalValid,
+        bool affectedByCompromise
+    ) {
+        StatementRecord memory record = statements[_documentHash];
+
+        if (record.documentHash == bytes32(0)) {
+            return (false, 0, address(0), 0, false, false);
+        }
+
+        (historicalValid, affectedByCompromise) =
+            bankRegistry.verifyHistoricalStatus(
+                record.chaveOperacional,
+                record.bankId,
+                record.timestamp
+            );
+
+        return (
+            true,
+            record.bankId,
+            record.chaveOperacional,
+            record.timestamp,
+            historicalValid,
+            affectedByCompromise
+        );
     }
 }

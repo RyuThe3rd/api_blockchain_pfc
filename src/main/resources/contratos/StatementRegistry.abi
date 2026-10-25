@@ -134,5 +134,49 @@
 		],
 		"stateMutability": "view",
 		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_documentHash",
+				"type": "bytes32"
+			}
+		],
+		"name": "verifyStatementWithStatus",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "exists",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bankId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "chaveOperacional",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "historicalValid",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "affectedByCompromise",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]

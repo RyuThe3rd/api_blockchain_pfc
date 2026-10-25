@@ -1,20 +1,23 @@
 package org.example.blockchain.service;
 
-import lombok.Builder;
-import lombok.Data;
+import java.math.BigInteger;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.example.blockchain.dto.VerificationResponseDTO;
 import org.example.blockchain.wrappers.StatementRegistry;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.tuples.generated.Tuple4;
+import org.web3j.tuples.generated.Tuple6;
+import org.web3j.tx.ReadonlyTransactionManager;
 import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.utils.Numeric;
-
-import java.math.BigInteger;
 
 @Slf4j
 @Service
@@ -22,74 +25,150 @@ import java.math.BigInteger;
 public class StatementRegistryService {
 
     private final Web3j web3j;
-    private final Credentials credentials; // Chave Operacional do Banco que assina
     private final ContractGasProvider gasProvider;
+
+    private static final String READ_ONLY_ADDRESS =
+            "0x0000000000000000000000000000000000000000";
 
     @Value("${blockchain.contracts.statement-registry-address}")
     private String statementRegistryAddress;
 
-    private StatementRegistry loadContract() {
-        return StatementRegistry.load(statementRegistryAddress, web3j, credentials, gasProvider);
+    // Para transaccoes de escrita: utiliza as credenciais do banco.
+    private StatementRegistry loadContract(
+            Credentials bankCredentials
+    ) {
+        return StatementRegistry.load(
+                statementRegistryAddress,
+                web3j,
+                bankCredentials,
+                gasProvider
+        );
+    }
+
+    // Para consultas: nao precisa da chave privada de um banco.
+    private StatementRegistry loadReadOnlyContract() {
+
+        ReadonlyTransactionManager transactionManager =
+                new ReadonlyTransactionManager(
+                        web3j,
+                        READ_ONLY_ADDRESS
+                );
+
+        return StatementRegistry.load(
+                statementRegistryAddress,
+                web3j,
+                transactionManager,
+                gasProvider
+        );
     }
 
     /**
-     * Ancora o Hash SHA-256 de um extrato bancário na blockchain.
-     * @param documentHashHex Hash em formato Hexadecimal de 64 carateres (ex: SHA-256 do extrato)
+     * Ancora o extracto com a chave operacional do banco emissor.
      */
-    public String anchorStatement(String documentHashHex) throws Exception {
-        log.info("A ancorar extrato com hash: {}...", documentHashHex);
+    public String anchorStatement(
+            String documentHashHex,
+            Credentials bankCredentials
+    ) throws Exception {
 
-        byte[] documentHashBytes32 = convertHexToBytes32(documentHashHex);
-        StatementRegistry contract = loadContract();
+        byte[] documentHashBytes32 =
+                convertHexToBytes32(documentHashHex);
 
-        TransactionReceipt receipt = contract.registerStatement(documentHashBytes32).send();
+        StatementRegistry contract =
+                loadContract(bankCredentials);
 
-        log.info("Extrato ancorado com sucesso. TxHash: {}", receipt.getTransactionHash());
+        TransactionReceipt receipt = contract
+                .registerStatement(documentHashBytes32)
+                .send();
+
+        if (!receipt.isStatusOK()) {
+            throw new IllegalStateException(
+                    "A transaccao de ancoragem foi revertida"
+            );
+        }
+
+        log.info(
+                "Extracto ancorado pelo banco {}. TxHash: {}",
+                bankCredentials.getAddress(),
+                receipt.getTransactionHash()
+        );
+
         return receipt.getTransactionHash();
     }
 
     /**
-     * Verifica a autenticidade de um extrato na blockchain.
+     * Consulta a ancoragem, a validade historica da chave
+     * e os incidentes de comprometimento.
+     *
+     * Apenas uma eth_call ao StatementRegistry.
      */
-    public StatementVerificationResult verifyStatement(String documentHashHex) throws Exception {
-        byte[] documentHashBytes32 = convertHexToBytes32(documentHashHex);
-        StatementRegistry contract = loadContract();
+    public VerificationResponseDTO verifyStatement(
+            String documentHashHex
+    ) throws Exception {
 
-        Tuple4<Boolean, BigInteger, String, BigInteger> result = contract.verifyStatement(documentHashBytes32).send();
+        byte[] documentHashBytes32 =
+                convertHexToBytes32(documentHashHex);
 
-        boolean exists = result.component1();
-        if (!exists) {
-            return StatementVerificationResult.builder()
+        StatementRegistry contract =
+                loadReadOnlyContract();
+
+        Tuple6<Boolean, BigInteger, String, BigInteger, Boolean, Boolean> result =
+                contract
+                .verifyStatementWithStatus(documentHashBytes32)
+                .send();
+
+        if (!result.component1()) {
+            return VerificationResponseDTO.builder()
                     .exists(false)
+                    .historicalKeyValid(false)
+                    .affectedByCompromise(false)
+                    .status("NOT_FOUND")
+                    .message("Este extracto não foi encontrado no registo blockchain.")
                     .build();
         }
 
-        return StatementVerificationResult.builder()
+        boolean historicalValid = result.component5();
+        boolean affected = result.component6();
+
+        String status;
+        String message;
+
+        if (!historicalValid) {
+            status = "INVALID_KEY";
+            message = "A chave utilizada não estava autorizada "
+                    + "na data de registo deste extracto.";
+
+        } else if (affected) {
+            status = "UNDER_REVIEW";
+            message = "A chave utilizada neste extracto foi "
+                    + "associada a um incidente de segurança. "
+                    + "Solicite confirmação ao banco emissor.";
+
+        } else {
+            status = "ANCHOR_VALID";
+            message = "O registo do extracto e a validade "
+                    + "histórica da chave foram confirmados.";
+        }
+
+        return VerificationResponseDTO.builder()
                 .exists(true)
-                .bankId(result.component2().longValue())
+                .bankId(result.component2().longValueExact())
                 .chaveOperacional(result.component3())
-                .timestamp(result.component4().longValue())
+                .timestamp(result.component4().longValueExact())
+                .historicalKeyValid(historicalValid)
+                .affectedByCompromise(affected)
+                .status(status)
+                .message(message)
                 .build();
     }
 
-    /**
-     * Converte uma String Hexadecimal (SHA-256) num array de 32 bytes exigido pelo Solidity (bytes32)
-     */
     private byte[] convertHexToBytes32(String hex) {
         String cleanHex = Numeric.cleanHexPrefix(hex);
         byte[] rawBytes = Numeric.hexStringToByteArray(cleanHex);
         if (rawBytes.length != 32) {
-            throw new IllegalArgumentException("O Hash SHA-256 deve ter exatamente 32 bytes (64 caracteres hex).");
+            throw new IllegalArgumentException(
+                    "O hash SHA-256 deve conter exactamente 32 bytes."
+            );
         }
         return rawBytes;
-    }
-
-    @Data
-    @Builder
-    public static class StatementVerificationResult {
-        private boolean exists;
-        private Long bankId;
-        private String chaveOperacional;
-        private Long timestamp;
     }
 }
