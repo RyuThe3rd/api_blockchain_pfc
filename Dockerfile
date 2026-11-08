@@ -12,7 +12,7 @@ RUN chmod +x gradlew
 
 # Copia o código fonte e gera o JAR executável
 COPY src /app/src
-RUN ./gradlew bootJar --no-daemon -x test
+RUN ./gradlew bootJar --no-daemon
 
 # ===== ETAPA 2: Imagem Final Leve para Produção =====
 FROM eclipse-temurin:17-jre-alpine
