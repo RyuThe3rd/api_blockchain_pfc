@@ -39,6 +39,6 @@ public class TypeBAnchorRequestDTO {
 
     // Histórico completo das transacções
     @Valid
-    @NotEmpty(message = "O extracto deve conter transacções")
+    @NotNull(message = "A lista de transacções é obrigatória")
     private List<@NotNull TypeBTransactionDTO> transactions;
 }

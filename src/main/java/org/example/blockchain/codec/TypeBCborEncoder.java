@@ -43,10 +43,9 @@ public class TypeBCborEncoder {
             );
         }
 
-        if (request.getTransactions() == null ||
-                request.getTransactions().isEmpty()) {
+        if (request.getTransactions() == null) {
             throw new IllegalArgumentException(
-                    "O extracto deve conter transacções"
+                    "A lista de transacções não pode ser nula"
             );
         }
 
