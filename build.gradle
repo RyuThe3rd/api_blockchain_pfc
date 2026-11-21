@@ -1,3 +1,4 @@
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '4.1.0'
@@ -18,38 +19,65 @@ repositories {
     mavenCentral()
 }
 
-
 dependencies {
 
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
+
     // Bucket4j (rate limiting)
     implementation 'com.bucket4j:bucket4j-core:8.7.0'
+
     // Bouncy Castle (criptografia)
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
     implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
 
+    // Web3j (interacção com a blockchain)
     implementation 'org.web3j:core:4.12.3'
+
+    // Serialização CBOR
     implementation 'tools.jackson.dataformat:jackson-dataformat-cbor'
+
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-h2console'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-restclient'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    // =========================================
+    // NOVO: GERAÇÃO DE PDF COM QR CODE
+    // =========================================
+
+    // Apache PDFBox - geração de extractos PDF
+    implementation 'org.apache.pdfbox:pdfbox:3.0.7'
+
+    // ZXing - geração do QR Code binário CBOR
+    implementation 'com.google.zxing:core:3.5.4'
+
+    // =========================================
+
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Ferramentas de desenvolvimento
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Bases de dados
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
-    annotationProcessor 'org.projectlombok:lombok'
+
+    // Testes
     testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
     testCompileOnly 'org.projectlombok:lombok'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
