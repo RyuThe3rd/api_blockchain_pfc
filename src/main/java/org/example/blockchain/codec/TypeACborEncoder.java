@@ -34,7 +34,7 @@ public class TypeACborEncoder {
         campos.add(VERSAO_ESQUEMA);                        // [2]
         campos.add(request.getBanco());                    // [3]
         campos.add(request.getTitular());                  // [4]
-        campos.add(request.getContaHash());                // [5]
+        campos.add(request.getNumeroConta());                // [5]
         campos.add(request.getPeriodo());                  // [6]
         campos.add(request.getParteInteiraDoSaldoFinal()); // [7] inteiro
         campos.add(request.getParteDeCentavosDoSaldoFinal()); // [8] inteiro

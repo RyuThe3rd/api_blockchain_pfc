@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.util.List;
@@ -41,4 +42,7 @@ public class TypeBAnchorRequestDTO {
     @Valid
     @NotNull(message = "A lista de transacções é obrigatória")
     private List<@NotNull TypeBTransactionDTO> transactions;
+
+    @NotBlank(message = "O número da conta é obrigatório")
+    private String numeroConta;
 }

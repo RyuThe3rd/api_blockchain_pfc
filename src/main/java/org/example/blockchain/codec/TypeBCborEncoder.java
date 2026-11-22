@@ -78,6 +78,7 @@ public class TypeBCborEncoder {
                 VERSAO_ESQUEMA,                            // [2]
                 request.getBanco(),                        // [3]
                 request.getTitular(),                      // [4]
+                request.getNumeroConta(),
                 request.getParteInteiraDoSaldoFinal(),     // [5]
                 request.getParteDeCentavosDoSaldoFinal(),  // [6]
                 issuedAt,                                  // [7]

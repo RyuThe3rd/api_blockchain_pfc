@@ -28,9 +28,9 @@ contract BankRegistry {
     }
 
     /**
-    Se uma chave privada ser comprometida,
+    Se uma chave privada operacional ser comprometida,
     *mesmo que a assinatura dos extratos emitidos seja válida,
-    *a chave operacional utilizada para ancoragem de extratos no intervalo em que se acredita que a chave privada foi descoberta por terceiros,
+    *a chave pública operacional utilizada para ancoragem de extratos no intervalo em que se acredita que a chave privada foi descoberta por terceiros,
     //consequentemente fica comprometida
     */
     struct KeyCompromise {

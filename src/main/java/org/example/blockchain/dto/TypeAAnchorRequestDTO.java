@@ -22,9 +22,8 @@ public class TypeAAnchorRequestDTO {
     @Size(max = 200)
     private String titular;
 
-    @NotBlank(message = "O hash da conta é obrigatório")
-    @Size(max = 130)
-    private String contaHash;
+    @NotBlank(message = "O número da conta é obrigatório")
+    private String numeroConta;
 
     @NotBlank(message = "O período é obrigatório")
     @Size(max = 100)
