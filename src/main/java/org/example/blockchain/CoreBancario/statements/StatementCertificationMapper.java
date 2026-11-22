@@ -22,7 +22,6 @@ public class StatementCertificationMapper {
         result.setBanco(bank);
         result.setTitular(data.holder());
         result.setNumeroConta(data.accountNo());
-        result.setContaHash(hash(bank + ":" + data.accountNo()));
         result.setPeriodo(period(data));
         result.setParteInteiraDoSaldoFinal(balance.units());
         result.setParteDeCentavosDoSaldoFinal(balance.cents());
