@@ -22,7 +22,12 @@ public class FineractTransactionAdapter implements TransactionPort {
             throw new IllegalArgumentException("A operação deve ser deposit ou withdrawal");
         }
         return http.post("/savingsaccounts/" + accountId + "/transactions?command=" + operation,
-            Map.of("transactionDate", date.format(DATE), "transactionAmount", amount,
-                   "dateFormat", "dd MMMM yyyy", "locale", "en"));
+            Map.of("transactionDate", date.format(DATE),
+                    "transactionAmount", amount,
+                    "paymentTypeId", 1,
+                    "dateFormat", "dd MMMM yyyy",
+                    "locale", "en"));
     }
+
+
 }
