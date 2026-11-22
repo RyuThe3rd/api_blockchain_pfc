@@ -18,7 +18,7 @@ public class FineractHttpClient {
     public FineractHttpClient(RestClient.Builder builder,
             @Value("${core.bancario.url:}") String baseUrl,
             @Value("${CORE_BANCARIO_USERNAME:mifos}") String username,
-            @Value("${CORE_BANCARIO_PASSWORD:}") String password,
+            @Value("${CORE_BANCARIO_PASSWORD:password}") String password,
             @Value("${CORE_BANCARIO_TENANT:default}") String tenant) {
         if (baseUrl == null || baseUrl.isBlank()) {
             // Não impedir que as rotas legadas de certificação iniciem sem Fineract.

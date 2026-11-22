@@ -16,11 +16,21 @@ public class FineractClientAdapter implements ClientManagementPort {
     private final FineractHttpClient http;
 
     @Override
-    public JsonNode createClient(String firstname, String lastname, LocalDate activationDate) {
+    public JsonNode createClient(
+            String firstname,
+            String lastname,
+            LocalDate activationDate) {
+
         return http.post("/clients", Map.of(
-            "officeId", 1, "firstname", firstname, "lastname", lastname,
-            "active", true, "activationDate", activationDate.format(DATE),
-            "locale", "en", "dateFormat", "dd MMMM yyyy"));
+                "officeId", 1,
+                "legalFormId", 1,
+                "firstname", firstname,
+                "lastname", lastname,
+                "active", true,
+                "activationDate", activationDate.format(DATE),
+                "locale", "en",
+                "dateFormat", "dd MMMM yyyy"
+        ));
     }
 
     @Override
