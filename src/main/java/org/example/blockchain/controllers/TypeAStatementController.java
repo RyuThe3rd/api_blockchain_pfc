@@ -3,6 +3,7 @@ package org.example.blockchain.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.blockchain.CoreBancario.statements.qr.QrCapacityExceededException;
 import org.example.blockchain.dto.TypeAAnchorRequestDTO;
 import org.example.blockchain.service.TypeAStatementService;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,8 @@ public class TypeAStatementController {
             @Valid @RequestBody TypeAAnchorRequestDTO request) {
         try {
             return ResponseEntity.ok(typeAStatementService.anchor(request));
+        } catch (QrCapacityExceededException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             log.warn("Pedido Tipo A CBOR inválido: {}", e.getMessage());
             return ResponseEntity.badRequest().body(

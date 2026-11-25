@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.example.blockchain.CoreBancario.statements.qr.QrCapacityExceededException;
 import org.example.blockchain.dto.TypeBAnchorRequestDTO;
 import org.example.blockchain.service.TypeBStatementService;
 
@@ -38,6 +39,8 @@ public class TypeBStatementController {
             Map<String, Object> response = typeBStatementService.anchor(request);
             return ResponseEntity.ok(response);
 
+        } catch (QrCapacityExceededException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             log.warn("Pedido inválido para emissão Tipo B: {}",
                     e.getMessage()

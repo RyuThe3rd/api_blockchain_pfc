@@ -2,6 +2,7 @@ package org.example.blockchain.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.blockchain.CoreBancario.statements.qr.QrCodeService;
 import org.example.blockchain.codec.CborEnvelopeEncoder;
 import org.example.blockchain.codec.TypeACborEncoder;
 import org.example.blockchain.dto.TypeAAnchorRequestDTO;
@@ -21,14 +22,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TypeAStatementService {
 
-    // Máximo de bytes de dados para QR Code versão 40, ECC M, byte mode.
-    private static final int MAX_QR_BYTES_NIVEL_M = 2331;
     private static final String COMPRESSAO = "none";
 
     private final TypeACborEncoder typeACborEncoder;
     private final CborEnvelopeEncoder cborEnvelopeEncoder;
     private final CryptoService cryptoService;
     private final StatementRegistryService statementRegistryService;
+    private final QrCodeService qrCodeService;
 
     public Map<String, Object> anchor(TypeAAnchorRequestDTO request) throws Exception {
         if (request == null) {
@@ -62,12 +62,8 @@ public class TypeAStatementService {
                 assinaturaBytes
         );
 
-        // Não ancorar algo que não caiba num QR em modo Byte ECC M.
-        if (envelopeCbor.length > MAX_QR_BYTES_NIVEL_M) {
-            throw new IllegalArgumentException(
-                    "Envelope excede a capacidade do QR nível M: "
-                            + envelopeCbor.length + " bytes");
-        }
+        // Validar o envelope completo antes de qualquer ancoragem.
+        qrCodeService.validateCapacity(envelopeCbor);
 
         // Mesmo smart contract do Tipo B; hash opaco de 32 bytes.
         String transactionHash = statementRegistryService.anchorStatement(

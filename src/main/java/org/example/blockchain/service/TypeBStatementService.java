@@ -4,6 +4,7 @@ package org.example.blockchain.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.example.blockchain.CoreBancario.statements.qr.QrCodeService;
 import org.example.blockchain.codec.TypeBCborEncoder;
 import org.example.blockchain.codec.ZlibCodec;
 import org.example.blockchain.codec.CborEnvelopeEncoder;
@@ -32,6 +33,7 @@ public class TypeBStatementService {
     // Serviços existentes, partilhados com o Tipo A.
     private final CryptoService cryptoService;
     private final StatementRegistryService statementRegistryService;
+    private final QrCodeService qrCodeService;
 
     /**
      * Emite, assina e ancora um extracto bancário Tipo B.
@@ -42,8 +44,9 @@ public class TypeBStatementService {
      * 3. Assinar o hash com ECDSA.
      * 4. Comprimir os bytes CBOR com ZLIB.
      * 5. Construir o envelope CBOR binário.
-     * 6. Ancorar o documentHash na blockchain.
-     * 7. Devolver o envelope em Base64.
+     * 6. Validar a capacidade do QR Code.
+     * 7. Ancorar o documentHash na blockchain.
+     * 8. Devolver o envelope em Base64.
      */
     public Map<String, Object> anchor(
             TypeBAnchorRequestDTO request
@@ -111,6 +114,9 @@ public class TypeBStatementService {
                 payloadComprimido,
                 assinaturaBytes
         );
+
+        // Validar o envelope completo antes de qualquer ancoragem.
+        qrCodeService.validateCapacity(envelopeCbor);
 
         // 8. Codificar o envelope em Base64 para a resposta HTTP.
         // Base64 NÃO será o conteúdo do QR Code.
